@@ -1,5 +1,7 @@
 package me.anemys.anecustomtoast;
 
+import me.anemys.aneiridiumpre.IridiumColorAPI;
+
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -74,9 +76,15 @@ class AdvancementHandler {
      */
     private NamespacedKey createAdvancement(String icon, String message, ToastType style, int modelData) {
         UUID randomUUID = UUID.randomUUID();
+        message = IridiumColorAPI.process(message);
+
         NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
         String serverVersion = Bukkit.getServer().getVersion();
         String iconDefinition;
+
+        icon = icon.toLowerCase()
+                .replace("İ", "I")
+                .replace("ı", "i");
 
         // For versions 1.20.5+ "id" is used, for previous versions "item"
         if (serverVersion.contains("1.20.5") || serverVersion.contains("1.20.6") || serverVersion.contains("1.21")) {
