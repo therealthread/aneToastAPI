@@ -100,7 +100,7 @@ public class ToastBuilder {
             advancementHandler.showToastToAll(icon, message, style, modelData);
         } else {
             if (players == null || players.isEmpty()) {
-                throw new IllegalStateException("Bildirim gösterilecek oyuncu belirlenmedi!");
+                throw new IllegalStateException("[ERROR TOAST POP-UP] No player found!");
             }
             advancementHandler.showToast(players, icon, message, style, modelData);
         }
