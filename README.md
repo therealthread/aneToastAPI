@@ -6,18 +6,18 @@ Simple toast notification system for minecraft bukkit api
 ToastManager toastManager = new ToastManager(yourPlugin);
 
 // to any player
-toastManager.showToast(player, "diamond", "Elmas Buldun!", ToastType.GOAL, 0);
+toastManager.showToast(player, "DIAMOND", "FIND THE DIAMONDS!", ToastType.GOAL, 0);
 
 // to multiple players
-toastManager.showToast(Arrays.asList(player1, player2), "gold_ingot", "Altın Topladınız!", ToastType.TASK, 0);
+toastManager.showToast(Arrays.asList(player1, player2), "GOLD_INGOT", "HE,! ANY MESSAGE!", ToastType.TASK, 0);
 
 // to all players
-toastManager.showToastToAll("netherite_ingot", "Sunucu Ödülü!", ToastType.CHALLENGE, 0);
+toastManager.showToastToAll("NETHERITE_BLOCK", "HEY!", ToastType.CHALLENGE, 0);
 
 // with builder
 toastManager.createToast()
-    .withIcon("emerald")
-    .withMessage("Harika İş!|İkinci Satır")
+    .withIcon("EMERALD")
+    .withMessage("First line!|Seconds line")
     .withStyle(ToastType.GOAL)
     .withModelData(1)
     .to(player)
