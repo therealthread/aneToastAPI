@@ -1,7 +1,7 @@
 # aneToastAPI
 Simple toast notification system for minecraft bukkit api
 
-# **Annotations**
+> **Annotations** (Maven)
 ```
         <dependency>
             <groupId>org.jetbrains</groupId>
