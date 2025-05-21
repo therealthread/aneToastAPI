@@ -1,5 +1,6 @@
 package me.anemys.anecustomtoast;
 
+import me.anemys.anecustomtoast.utils.ColorParser;
 import me.anemys.anecustomtoast.versions.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -7,9 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @SuppressWarnings({"unused", "SpellCheckingInspection", "deprecation"})
 
@@ -84,6 +83,7 @@ class AdvancementHandler {
     @NotNull
     private NamespacedKey createAdvancementLegacy(String icon, String message, ToastType style, int modelData, boolean glowing, NamespacedKey advancementKey) {
 
+
         String json = "{\n" +
                 " \"criteria\": {\n" +
                 " \"trigger\": {\n" +
@@ -96,9 +96,7 @@ class AdvancementHandler {
                 " \"nbt\": \"{CustomModelData:" + modelData +
                 (glowing ? ",Enchantments:[{lvl:1,id:\\\"minecraft:protection\\\"}]" : "") + "}\"\n" +
                 " },\n" +
-                " \"title\": {\n" +
-                " \"text\": \"" + message.replace("|", "\n") + "\"\n" +
-                " },\n" +
+                " \"title\": " + message + ",\n" +
                 " \"description\": {\n" +
                 " \"text\": \"\"\n" +
                 " },\n" +
@@ -109,10 +107,12 @@ class AdvancementHandler {
                 " \"hidden\": true\n" +
                 " }\n" +
                 "}";
-
+        Bukkit.getLogger().info(json);
         Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
+
         return advancementKey;
     }
+
 
     /**
      * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5+
@@ -150,9 +150,7 @@ class AdvancementHandler {
                 "\n },\n" +
                 " \"count\": 1\n" +
                 " },\n" +
-                " \"title\": {\n" +
-                " \"text\": \"" + message.replace("|", "\n") + "\"\n" +
-                " },\n" +
+                " \"title\": " + message + ",\n" +
                 " \"description\": {\n" +
                 " \"text\": \"\"\n" +
                 " },\n" +
@@ -164,10 +162,8 @@ class AdvancementHandler {
                 " }\n" +
                 "}";
 
-
-        Bukkit.getLogger().info(json);
-        Bukkit.getLogger().info(modelDataString);
         Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
+
         return advancementKey;
     }
 
@@ -185,13 +181,18 @@ class AdvancementHandler {
 
         boolean isNewVersion = ServerVersion.isNewVersion(plugin.getServer().getVersion());
 
+        List<Map<String, Object>> msgList = ColorParser.process(message);
+
+        String json = ColorParser.formatToJsonString(msgList);
+        json = json.replace("|", "\n");
         icon = icon.toLowerCase().replace("İ", "I").replace("ı", "i");
+
         UUID randomUUID = UUID.randomUUID();
         NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
 
         if (isNewVersion) {
             if (customModelData.toString() == null) { customModelData = "anemys"; }
-            return createAdvancementModern(icon, message, style, customModelData.toString(), glowing, advancementKey);
+            return createAdvancementModern(icon, json, style, customModelData.toString(), glowing, advancementKey);
 
         } else {
             int modelDataInt = 0;
@@ -204,7 +205,7 @@ class AdvancementHandler {
                     //TODO: parsing fails, modelDataInt remains 0
                 }
             }
-            return createAdvancementLegacy(icon, message, style, modelDataInt, glowing, advancementKey);
+            return createAdvancementLegacy(icon, json, style, modelDataInt, glowing, advancementKey);
         }
     }
 
