@@ -16,6 +16,8 @@ public class ToastBuilder {
     private Boolean glowing = false;
     private Collection<? extends Player> players;
     private boolean isToAll = false;
+    private String modelDataType = null;
+
     private final AdvancementHandler advancementHandler;
 
     ToastBuilder(JavaPlugin plugin, AdvancementHandler advancementHandler) {
@@ -94,13 +96,29 @@ public class ToastBuilder {
         return this;
     }
 
-    /**
-     * Determines the CustomModelData value to be used in the notification icon
-     * @param modelData CustomModelData value
-     * @return This builder
-     */
     public ToastBuilder withModelData(Object modelData) {
         this.modelData = modelData;
+
+        if (modelData instanceof String) {
+            this.modelDataType = "string";
+        } else if (modelData instanceof Float || modelData instanceof Double) {
+            this.modelDataType = "float";
+        } else {
+            this.modelDataType = "integer";
+        }
+        return this;
+    }
+
+    /**
+     * Sets the model data and its type explicitly
+     *
+     * @param modelData The model data (String, Float, or Integer)
+     * @param modelDataType The type of model data ("string", "float", or "integer")
+     * @return This builder
+     */
+    public ToastBuilder withModelData(Object modelData, String modelDataType) {
+        this.modelData = modelData;
+        this.modelDataType = modelDataType;
         return this;
     }
 
@@ -109,12 +127,12 @@ public class ToastBuilder {
      */
     public void show() {
         if (isToAll) {
-            advancementHandler.showToastToAll(icon, message, style, modelData, glowing);
+            advancementHandler.showToastToAll(icon, message, style, modelData, modelDataType, glowing);
         } else {
             if (players == null || players.isEmpty()) {
                 throw new IllegalStateException("[ERROR TOAST POP-UP] No player found!");
             }
-            advancementHandler.showToast(players, icon, message, style, modelData, glowing);
+            advancementHandler.showToast(players, icon, message, style, modelData, modelDataType, glowing);
         }
     }
 }
