@@ -1,3 +1,4 @@
+
 package me.anemys.anecustomtoast;
 
 import org.bukkit.entity.Player;
@@ -6,12 +7,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Arrays;
 import java.util.Collection;
 
-@SuppressWarnings({"unused", "SpellCheckingInspection"})
+@SuppressWarnings({"unused"})
 public class ToastBuilder {
     private String icon = "paper";
     private String message = "Toast Message";
     private ToastType style = ToastType.TASK;
-    private int modelData = 0;
+    private Object modelData;
+    private Boolean glowing = false;
     private Collection<? extends Player> players;
     private boolean isToAll = false;
     private final AdvancementHandler advancementHandler;
@@ -83,11 +85,21 @@ public class ToastBuilder {
     }
 
     /**
+     * Determines the glowing of the notifying icon
+     * @param glowing Icon glowing
+     * @return This builder
+     */
+    public ToastBuilder setGlowing(boolean glowing) {
+        this.glowing = glowing;
+        return this;
+    }
+
+    /**
      * Determines the CustomModelData value to be used in the notification icon
      * @param modelData CustomModelData value
      * @return This builder
      */
-    public ToastBuilder withModelData(int modelData) {
+    public ToastBuilder withModelData(Object modelData) {
         this.modelData = modelData;
         return this;
     }
@@ -97,12 +109,12 @@ public class ToastBuilder {
      */
     public void show() {
         if (isToAll) {
-            advancementHandler.showToastToAll(icon, message, style, modelData);
+            advancementHandler.showToastToAll(icon, message, style, modelData, glowing);
         } else {
             if (players == null || players.isEmpty()) {
                 throw new IllegalStateException("[ERROR TOAST POP-UP] No player found!");
             }
-            advancementHandler.showToast(players, icon, message, style, modelData);
+            advancementHandler.showToast(players, icon, message, style, modelData, glowing);
         }
     }
 }
