@@ -22,15 +22,14 @@ class AdvancementHandler {
     /**
      * Shows Toast notification to specified players
      */
-    void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, Object modelData, boolean glowing) {
-        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, glowing);
+    void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
+        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, modelDataType, glowing);
 
         /*
          *   Give the same advancement to all players.
          *   If not, create a new advancement for each player.
          *   (We don't want this to happen.)
          * */
-
         for (Player p : players) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 grantAdvancement(p, advancementKey);
@@ -45,21 +44,20 @@ class AdvancementHandler {
      * Shows the Toast notification to all players in a more optimal way
      * Creates a single advancement and shows it to all players
      */
-    void showToastToAll(String icon, String message, ToastType style, Object modelData, boolean glowing) {
+    void showToastToAll(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
         Collection<? extends Player> allPlayers = Bukkit.getOnlinePlayers();
 
         if (allPlayers.isEmpty()) {
             return;
         }
 
-        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, glowing);
+        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, modelDataType, glowing);
 
         /*
          *   Give the same advancement to all players.
          *   If not, create a new advancement for each player.
          *   (We don't want this to happen.)
          * */
-
         for (Player p : allPlayers) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 grantAdvancement(p, advancementKey);
@@ -71,8 +69,8 @@ class AdvancementHandler {
     }
 
     /**
-     * Creates an advancement for displaying a toast notification for Minecraft versions before 1.20.5
-     * Uses NBT with integer CustomModelData (1.20.5<legacy)
+     * Creates an advancement for displaying a toast notification for Minecraft versions before 1.20.4
+     * Uses NBT with integer CustomModelData (1.20.4<legacy)
      *
      * @param icon The Minecraft item ID to use as the toast icon
      * @param message The message to display in the toast
@@ -81,8 +79,20 @@ class AdvancementHandler {
      * @return The NamespacedKey of the created advancement
      */
     @NotNull
-    private NamespacedKey createAdvancementLegacy(String icon, String message, ToastType style, int modelData, boolean glowing, NamespacedKey advancementKey) {
+    private NamespacedKey createAdvancementLegacy(String icon, String message, ToastType style, Object modelData, boolean glowing, NamespacedKey advancementKey) {
 
+        int modelDataInt = 0;
+        if (modelData instanceof Integer) {
+            modelDataInt = (Integer) modelData;
+        } else if (modelData instanceof Float) {
+            modelDataInt = ((Float) modelData).intValue();
+        } else if (modelData instanceof String) {
+            try {
+                modelDataInt = Integer.parseInt(modelData.toString());
+            } catch (NumberFormatException ignored) {
+                //TODO: If parsing fails, modelDataInt remains 0
+            }
+        }
 
         String json = "{\n" +
                 " \"criteria\": {\n" +
@@ -93,7 +103,7 @@ class AdvancementHandler {
                 " \"display\": {\n" +
                 " \"icon\": {\n" +
                 " \"item\": \"minecraft:" + icon + "\",\n" +
-                " \"nbt\": \"{CustomModelData:" + modelData +
+                " \"nbt\": \"{CustomModelData:" + modelDataInt +
                 (glowing ? ",Enchantments:[{lvl:1,id:\\\"minecraft:protection\\\"}]" : "") + "}\"\n" +
                 " },\n" +
                 " \"title\": " + message + ",\n" +
@@ -107,65 +117,80 @@ class AdvancementHandler {
                 " \"hidden\": true\n" +
                 " }\n" +
                 "}";
-        Bukkit.getLogger().info(json);
-        Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
 
+        Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
         return advancementKey;
     }
 
 
     /**
      * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5+
-     * Uses component system with string CustomModelData
+     * Uses component system with string or float CustomModelData
      *
      * @param icon The Minecraft item ID to use as the toast icon
      * @param message The message to display in the toast
      * @param style The advancement frame style (toast type)
-     * @param modelDataString The custom model data as string
+     * @param modelData The custom model data (string or float)
+     * @param modelDataType The type of model data ("string", "float", or "integer")
      * @return The NamespacedKey of the created advancement
      */
     @NotNull
-    private NamespacedKey createAdvancementModern(String icon, String message, ToastType style, String modelDataString, boolean glowing, NamespacedKey advancementKey) {
+    private NamespacedKey createAdvancementModern(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing, NamespacedKey advancementKey) {
+        String customModelData;
+
+        if (modelDataType == null) {
+            modelDataType = modelData instanceof String ? "string" :
+                    (modelData instanceof Float || modelData instanceof Double) ? "float" : "integer";
+        }
+
+        if ("float".equals(modelDataType) || "integer".equals(modelDataType)) {
+            customModelData = "\"minecraft:custom_model_data\": {\n" +
+                    "  \"floats\": [" + modelData +
+                    "]\n" +
+                    "}";
+        } else {
+            customModelData = "\"minecraft:custom_model_data\": {\n" +
+                    "  \"strings\": [\n" +
+                    "    \"" + modelData + "\"\n" +
+                    "  ]\n" +
+                    "}";
+        }
 
         String json = "{\n" +
                 " \"criteria\": {\n" +
-                " \"trigger\": {\n" +
-                " \"trigger\": \"minecraft:impossible\"\n" +
-                " }\n" +
+                "   \"trigger\": {\n" +
+                "     \"trigger\": \"minecraft:impossible\"\n" +
+                "   }\n" +
                 " },\n" +
                 " \"display\": {\n" +
-                " \"icon\": {\n" +
-                " \"id\": \"minecraft:" + icon + "\",\n" +
-                " \"components\": {\n" +
-                " \"minecraft:custom_model_data\": {\n" +
-                " \"strings\": [\n" +
-                " \"" + modelDataString + "\"\n" +
-                " ]\n" +
-                " }" +
+                "   \"icon\": {\n" +
+                "     \"id\": \"minecraft:" + icon + "\",\n" +
+                "     \"components\": {\n" +
+                customModelData +
                 (glowing ? ",\n \"minecraft:enchantments\": {\n" +
                         " \"levels\": {\n" +
                         " \"minecraft:protection\": 1\n" +
                         " }\n" +
                         " }" : "") +
-                "\n },\n" +
-                " \"count\": 1\n" +
-                " },\n" +
-                " \"title\": " + message + ",\n" +
-                " \"description\": {\n" +
-                " \"text\": \"\"\n" +
-                " },\n" +
-                " \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
-                " \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
-                " \"announce_to_chat\": false,\n" +
-                " \"show_toast\": true,\n" +
-                " \"hidden\": true\n" +
+                "\n     },\n" +
+                "     \"count\": 1\n" +
+                "   },\n" +
+                "   \"title\": " + message + ",\n" +
+                "   \"description\": {\n" +
+                "     \"text\": \"\"\n" +
+                "   },\n" +
+                "   \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
+                "   \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
+                "   \"announce_to_chat\": false,\n" +
+                "   \"show_toast\": true,\n" +
+                "   \"hidden\": true\n" +
                 " }\n" +
                 "}";
 
         Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
-
         return advancementKey;
     }
+
 
     /**
      * Helper method to determine which advancement creation method to use based on server version
@@ -173,16 +198,15 @@ class AdvancementHandler {
      * @param icon The Minecraft item ID to use as the toast icon
      * @param message The message to display in the toast
      * @param style The advancement frame style (toast type)
-     * @param customModelData The custom model data (can be either int or String)
+     * @param modelData The custom model data (can be int, float, or String)
+     * @param modelDataType The type of model data ("string", "float", or "integer")
      * @return The NamespacedKey of the created advancement
      */
     @NotNull
-    private NamespacedKey createAdvancement(String icon, String message, ToastType style, Object customModelData, boolean glowing) {
-
+    private NamespacedKey createAdvancement(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
         boolean isNewVersion = ServerVersion.isNewVersion(plugin.getServer().getVersion());
 
         List<Map<String, Object>> msgList = ColorParser.process(message);
-
         String json = ColorParser.formatToJsonString(msgList);
         json = json.replace("|", "\n");
         icon = icon.toLowerCase().replace("İ", "I").replace("ı", "i");
@@ -191,21 +215,18 @@ class AdvancementHandler {
         NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
 
         if (isNewVersion) {
-            if (customModelData.toString() == null) { customModelData = "anemys"; }
-            return createAdvancementModern(icon, json, style, customModelData.toString(), glowing, advancementKey);
 
-        } else {
-            int modelDataInt = 0;
-            if (customModelData instanceof Integer) {
-                modelDataInt = (Integer) customModelData;
-            } else if (customModelData instanceof String) {
-                try {
-                    modelDataInt = Integer.parseInt(customModelData.toString());
-                } catch (NumberFormatException ignored) {
-                    //TODO: parsing fails, modelDataInt remains 0
-                }
+            if (modelData == null) {
+                modelData = "anemys";
+                modelDataType = "string";
             }
-            return createAdvancementLegacy(icon, json, style, modelDataInt, glowing, advancementKey);
+            return createAdvancementModern(icon, json, style, modelData, modelDataType, glowing, advancementKey);
+        } else {
+
+            if (modelData == null) {
+                modelData = 0;
+            }
+            return createAdvancementLegacy(icon, json, style, modelData, glowing, advancementKey);
         }
     }
 
