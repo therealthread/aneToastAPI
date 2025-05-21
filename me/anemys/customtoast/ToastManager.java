@@ -29,15 +29,14 @@ public class ToastManager {
      * @param message Show message
      * @param style Toast Type
      * @param modelData CustomModelData value
-     * @param modelDataType CustomModelData type
      * @param glowing Glowing icon
      */
-    public void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
+    public void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, Object modelData, boolean glowing) {
         createToast()
                 .withIcon(icon)
                 .withMessage(message)
                 .withStyle(style)
-                .withModelData(modelData, modelDataType)
+                .withModelData(modelData)
                 .setGlowing(glowing)
                 .to(players)
                 .show();
@@ -49,15 +48,14 @@ public class ToastManager {
      * @param message Show message
      * @param style Toast Type
      * @param modelData CustomModelData value
-     * @param modelDataType CustomModelData type
      * @param glowing Glowing icon
      */
-    public void showToastToAll(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
+    public void showToastToAll(String icon, String message, ToastType style, Object modelData, boolean glowing) {
         createToast()
                 .withIcon(icon)
                 .withMessage(message)
                 .withStyle(style)
-                .withModelData(modelData, modelDataType)
+                .withModelData(modelData)
                 .setGlowing(glowing)
                 .toAll()
                 .show();
@@ -69,10 +67,9 @@ public class ToastManager {
      * @param message Show message
      * @param style Toast Type
      * @param modelData CustomModelData value
-     * @param modelDataType CustomModelData type
      * @param glowing Glowing icon
      */
-    public void showToast(Player[] players, String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
-        showToast(Arrays.asList(players), icon, message, style, modelData, modelDataType, glowing);
+    public void showToast(Player[] players, String icon, String message, ToastType style, Object modelData, boolean glowing) {
+        showToast(Arrays.asList(players), icon, message, style, modelData, glowing);
     }
 }
