@@ -29,7 +29,7 @@ toastManager.createToast()
 
 ```
 
-> 1.20.5+ Component (Custom model data) support
+> 1.20.4-1.20.5+ Component (Custom model data) support
 ```
 
 toastManager.showToastToAll("NETHERITE_BLOCK", "HEY!", ToastType.CHALLENGE, "my_model_name", false);
