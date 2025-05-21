@@ -1,11 +1,11 @@
 package me.anemys.anecustomtoast;
 
-import me.anemys.aneiridiumpre.IridiumColorAPI;
-
+import me.anemys.anecustomtoast.versions.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -16,15 +16,15 @@ import java.util.UUID;
 class AdvancementHandler {
     private final JavaPlugin plugin;
 
-    AdvancementHandler(JavaPlugin plugin) {
+    AdvancementHandler(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
     /**
      * Shows Toast notification to specified players
      */
-    void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, int modelData) {
-        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData);
+    void showToast(Collection<? extends Player> players, String icon, String message, ToastType style, Object modelData, boolean glowing) {
+        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, glowing);
 
         /*
          *   Give the same advancement to all players.
@@ -32,10 +32,10 @@ class AdvancementHandler {
          *   (We don't want this to happen.)
          * */
 
-        for (Player player : players) {
+        for (Player p : players) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                grantAdvancement(player, advancementKey);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> revokeAdvancement(player, advancementKey), 10);
+                grantAdvancement(p, advancementKey);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> revokeAdvancement(p, advancementKey), 10);
             }, 1);
         }
 
@@ -46,25 +46,25 @@ class AdvancementHandler {
      * Shows the Toast notification to all players in a more optimal way
      * Creates a single advancement and shows it to all players
      */
-    void showToastToAll(String icon, String message, ToastType style, int modelData) {
+    void showToastToAll(String icon, String message, ToastType style, Object modelData, boolean glowing) {
         Collection<? extends Player> allPlayers = Bukkit.getOnlinePlayers();
 
         if (allPlayers.isEmpty()) {
             return;
         }
 
-        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData);
+        NamespacedKey advancementKey = createAdvancement(icon, message, style, modelData, glowing);
 
         /*
-        *   Give the same advancement to all players.
-        *   If not, create a new advancement for each player.
-        *   (We don't want this to happen.)
-        * */
+         *   Give the same advancement to all players.
+         *   If not, create a new advancement for each player.
+         *   (We don't want this to happen.)
+         * */
 
-        for (Player player : allPlayers) {
+        for (Player p : allPlayers) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                grantAdvancement(player, advancementKey);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> revokeAdvancement(player, advancementKey), 10);
+                grantAdvancement(p, advancementKey);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> revokeAdvancement(p, advancementKey), 10);
             }, 1);
         }
 
@@ -72,32 +72,19 @@ class AdvancementHandler {
     }
 
     /**
-     * Creates Advancement
+     * Creates an advancement for displaying a toast notification for Minecraft versions before 1.20.5
+     * Uses NBT with integer CustomModelData (1.20.5<legacy)
+     *
+     * @param icon The Minecraft item ID to use as the toast icon
+     * @param message The message to display in the toast
+     * @param style The advancement frame style (toast type)
+     * @param modelData The custom model data as integer
+     * @return The NamespacedKey of the created advancement
      */
-    private NamespacedKey createAdvancement(String icon, String message, ToastType style, int modelData) {
-        UUID randomUUID = UUID.randomUUID();
-        message = IridiumColorAPI.process(message);
+    @NotNull
+    private NamespacedKey createAdvancementLegacy(String icon, String message, ToastType style, int modelData, boolean glowing, NamespacedKey advancementKey) {
 
-        NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
-        String serverVersion = Bukkit.getServer().getVersion();
-        String iconDefinition;
-
-        icon = icon.toLowerCase()
-                .replace("İ", "I")
-                .replace("ı", "i");
-
-        // For versions 1.20.5+ "id" is used, for previous versions "item"
-        if (serverVersion.contains("1.20.5") || serverVersion.contains("1.20.6") || serverVersion.contains("1.21")) {
-            iconDefinition = "\"id\": \"minecraft:" + icon + "\"";
-        } else {
-            iconDefinition = "\"item\": \"minecraft:" + icon + "\"";
-        }
-
-        if (modelData > 0) {
-            iconDefinition += ",\n \"nbt\": \"{CustomModelData:" + modelData + "}\"";
-        }
-
-        Bukkit.getUnsafe().loadAdvancement(advancementKey, "{\n" +
+        String json = "{\n" +
                 " \"criteria\": {\n" +
                 " \"trigger\": {\n" +
                 " \"trigger\": \"minecraft:impossible\"\n" +
@@ -105,7 +92,9 @@ class AdvancementHandler {
                 " },\n" +
                 " \"display\": {\n" +
                 " \"icon\": {\n" +
-                " " + iconDefinition + "\n" +
+                " \"item\": \"minecraft:" + icon + "\",\n" +
+                " \"nbt\": \"{CustomModelData:" + modelData +
+                (glowing ? ",Enchantments:[{lvl:1,id:\\\"minecraft:protection\\\"}]" : "") + "}\"\n" +
                 " },\n" +
                 " \"title\": {\n" +
                 " \"text\": \"" + message.replace("|", "\n") + "\"\n" +
@@ -119,23 +108,119 @@ class AdvancementHandler {
                 " \"show_toast\": true,\n" +
                 " \"hidden\": true\n" +
                 " }\n" +
-                "}");
+                "}";
+
+        Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
         return advancementKey;
+    }
+
+    /**
+     * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5+
+     * Uses component system with string CustomModelData
+     *
+     * @param icon The Minecraft item ID to use as the toast icon
+     * @param message The message to display in the toast
+     * @param style The advancement frame style (toast type)
+     * @param modelDataString The custom model data as string
+     * @return The NamespacedKey of the created advancement
+     */
+    @NotNull
+    private NamespacedKey createAdvancementModern(String icon, String message, ToastType style, String modelDataString, boolean glowing, NamespacedKey advancementKey) {
+
+        String json = "{\n" +
+                " \"criteria\": {\n" +
+                " \"trigger\": {\n" +
+                " \"trigger\": \"minecraft:impossible\"\n" +
+                " }\n" +
+                " },\n" +
+                " \"display\": {\n" +
+                " \"icon\": {\n" +
+                " \"id\": \"minecraft:" + icon + "\",\n" +
+                " \"components\": {\n" +
+                " \"minecraft:custom_model_data\": {\n" +
+                " \"strings\": [\n" +
+                " \"" + modelDataString + "\"\n" +
+                " ]\n" +
+                " }" +
+                (glowing ? ",\n \"minecraft:enchantments\": {\n" +
+                        " \"levels\": {\n" +
+                        " \"minecraft:protection\": 1\n" +
+                        " }\n" +
+                        " }" : "") +
+                "\n },\n" +
+                " \"count\": 1\n" +
+                " },\n" +
+                " \"title\": {\n" +
+                " \"text\": \"" + message.replace("|", "\n") + "\"\n" +
+                " },\n" +
+                " \"description\": {\n" +
+                " \"text\": \"\"\n" +
+                " },\n" +
+                " \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
+                " \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
+                " \"announce_to_chat\": false,\n" +
+                " \"show_toast\": true,\n" +
+                " \"hidden\": true\n" +
+                " }\n" +
+                "}";
+
+
+        Bukkit.getLogger().info(json);
+        Bukkit.getLogger().info(modelDataString);
+        Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
+        return advancementKey;
+    }
+
+    /**
+     * Helper method to determine which advancement creation method to use based on server version
+     *
+     * @param icon The Minecraft item ID to use as the toast icon
+     * @param message The message to display in the toast
+     * @param style The advancement frame style (toast type)
+     * @param customModelData The custom model data (can be either int or String)
+     * @return The NamespacedKey of the created advancement
+     */
+    @NotNull
+    private NamespacedKey createAdvancement(String icon, String message, ToastType style, Object customModelData, boolean glowing) {
+
+        boolean isNewVersion = ServerVersion.isNewVersion(plugin.getServer().getVersion());
+
+        icon = icon.toLowerCase().replace("İ", "I").replace("ı", "i");
+        UUID randomUUID = UUID.randomUUID();
+        NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
+
+        if (isNewVersion) {
+            if (customModelData.toString() == null) { customModelData = "anemys"; }
+            return createAdvancementModern(icon, message, style, customModelData.toString(), glowing, advancementKey);
+
+        } else {
+            int modelDataInt = 0;
+            if (customModelData instanceof Integer) {
+                modelDataInt = (Integer) customModelData;
+            } else if (customModelData instanceof String) {
+                try {
+                    modelDataInt = Integer.parseInt(customModelData.toString());
+                } catch (NumberFormatException ignored) {
+                    //TODO: parsing fails, modelDataInt remains 0
+                }
+            }
+            return createAdvancementLegacy(icon, message, style, modelDataInt, glowing, advancementKey);
+        }
     }
 
     /**
      * Add advancement to the player
      */
-    private void grantAdvancement(Player player, NamespacedKey advancementKey) {
-        player.getAdvancementProgress(Objects.requireNonNull(Bukkit.getAdvancement(advancementKey)))
+    private void grantAdvancement(Player p, NamespacedKey advancementKey) {
+        p.getAdvancementProgress(Objects.requireNonNull(Bukkit.getAdvancement(advancementKey)))
                 .awardCriteria("trigger");
     }
 
     /**
      * Revoke advancement from the player
      */
-    private void revokeAdvancement(Player player, NamespacedKey advancementKey) {
-        player.getAdvancementProgress(Objects.requireNonNull(Bukkit.getAdvancement(advancementKey)))
+    private void revokeAdvancement(Player p, NamespacedKey advancementKey) {
+        p.getAdvancementProgress(Objects.requireNonNull(Bukkit.getAdvancement(advancementKey)))
                 .revokeCriteria("trigger");
     }
 }
