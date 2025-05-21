@@ -1,4 +1,4 @@
-# aneToastAPI | 1.16.5 - 1.20.5+ Component (Custom model data) support
+# aneToastAPI | 1.16.5 - 1.20.5+ Component (Custom models)
 Simple toast notification system for minecraft bukkit api
 
 ```java
