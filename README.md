@@ -2,7 +2,7 @@
 Simple toast notification system for minecraft bukkit api
 
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
-![]([https://github.com/therealthread/aneToastAPI/blob/main/image.png](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png)?raw=true)
+![](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png?raw=true)
 
 ```java
 // new obj ToastManager
