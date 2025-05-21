@@ -1,6 +1,8 @@
 # aneToastAPI | 1.16.5 - 1.20.4-1.20.5+ Component (Custom models)
 Simple toast notification system for minecraft bukkit api
 
+![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
+
 ```java
 // new obj ToastManager
 ToastManager toastManager = new ToastManager(yourPlugin);
