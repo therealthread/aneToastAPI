@@ -2,6 +2,7 @@
 Simple toast notification system for minecraft bukkit api
 
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
+![]([https://github.com/therealthread/aneToastAPI/blob/main/image.png](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png)?raw=true)
 
 ```java
 // new obj ToastManager
@@ -36,7 +37,7 @@ toastManager.showToastToAll("NETHERITE_BLOCK", "HEY!", ToastType.CHALLENGE, "my_
 
 toastManager.createToast()
     .withIcon("PAPER")
-    .withMessage("First line!|Seconds line")
+    .withMessage("&#FF0000t&#E72000e&#D04000x&#B86000t &#889F00w&#71BF00i&#59DF00t&#41FF00h &#2ECD49r&#25B46Dg&#1C9A92b &#0968DB:&#004FFFO")
     .withStyle(ToastType.GOAL)
     .withModelData("my_model_name")
     .setGlowing(false)
