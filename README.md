@@ -6,7 +6,7 @@ Simple toast notification system for minecraft bukkit api
 
 ## 📌 Data Formats by Version
 
-### **Between 1.16 - 1.20.4 (INTEGER - Tag Format)**
+### Between 1.16 - 1.20.4 *(INTEGER - Tag Format)*
 ```json
 {
   "id": "minecraft:stone",
@@ -14,7 +14,7 @@ Simple toast notification system for minecraft bukkit api
 }
 ```
 
-### **Between 1.20.5 - 1.21.1 (INTEGER - Components Format)**
+### Between 1.20.5 - 1.21.1 *(INTEGER - Components Format)*
 ```json
 {
   "id": "minecraft:stone",
@@ -22,7 +22,7 @@ Simple toast notification system for minecraft bukkit api
 }
 ```
 
-### **Between 1.21.2 - 1.21.5 (FLOATS & STRINGS - Components Format)**
+### Between 1.21.2 - 1.21.5 *(FLOATS & STRINGS - Components Format)*
 ```json
 {
   "id": "minecraft:stone",
@@ -36,7 +36,7 @@ Simple toast notification system for minecraft bukkit api
 }
 ```
 
-##BUILDING
+## **BUILDING**
 ```java
 // new obj ToastManager
 ToastManager toastManager = new ToastManager(yourPlugin);
