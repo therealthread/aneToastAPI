@@ -1,28 +1,44 @@
-package me.anemys.anecustomtoast.versions;
+package me.anemys.toastapi.versions;
 
-public enum ServerVersion {
-    V1_20_4("1.20.4"),
-    V1_20_5("1.20.5"),
-    V1_20_6("1.20.6"),
-    V1_21("1.21"),
-    V1_22("1.22"); //hope :'(
+public class ServerVersion {
 
-    private final String version;
+    /**
+     * Version type based on server version
+     */
+    public static VersionType getVersionType(String serverVersion) {
 
-    ServerVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public static boolean isNewVersion(String serverVersion) {
-        for (ServerVersion server : ServerVersion.values()) {
-            if (serverVersion.contains(server.getVersion())) {
-                return true;
-            }
+        if (serverVersion.contains("1.16") ||
+                serverVersion.contains("1.17") ||
+                serverVersion.contains("1.18") ||
+                serverVersion.contains("1.19") ||
+                serverVersion.contains("1.20.0") ||
+                serverVersion.contains("1.20.1") ||
+                serverVersion.contains("1.20.2") ||
+                serverVersion.contains("1.20.3") ||
+                serverVersion.contains("1.20.4")) {
+            return VersionType.LEGACY;
         }
-        return false;
+
+        if (serverVersion.contains("1.20.5") ||
+                serverVersion.contains("1.20.6") ||
+                (serverVersion.contains("1.21") && !serverVersion.contains("1.21.2") &&
+                        !serverVersion.contains("1.21.3") && !serverVersion.contains("1.21.4") &&
+                        !serverVersion.contains("1.21.5")) ||
+                serverVersion.contains("1.21.0") ||
+                serverVersion.contains("1.21.1")) {
+            return VersionType.MIDDLE;
+        }
+
+        // 1.21.2+ and future versions
+        return VersionType.MODERN;
+    }
+
+    /**
+     * @deprecated use getVersionType() instead [oldest]
+     */
+    @Deprecated
+    public static boolean isNewVersion(String serverVersion) {
+        VersionType versionType = getVersionType(serverVersion);
+        return versionType == VersionType.MODERN;
     }
 }
