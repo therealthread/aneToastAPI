@@ -1,9 +1,39 @@
-# aneToastAPI | 1.16.5 - 1.20.4+ Component (Custom models) - 1.21**
+# 1.16 - 1.21.5 Component (Custom models) - [aneCT]
 Simple toast notification system for minecraft bukkit api
 
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
 ![](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png?raw=true)
 
+## 📌 Data Formats by Version,
+
+### **Between 1.16 - 1.20.4 (INTEGER - Tag Format)**
+```json
+{
+  "id": "minecraft:stone",
+  "tag": { "CustomModelData": 1 }
+}```
+
+### **Between 1.20.5 - 1.21.1 (INTEGER - Components Format)**
+```json
+{
+  "id": "minecraft:stone",
+  "components": { "minecraft:custom_model_data": 1 }
+}```
+
+### **Between 1.21.2 - 1.21.5 (FLOATS & STRINGS - Components Format)**
+```json
+{
+  "id": "minecraft:stone",
+  "components": { "minecraft:custom_model_data": { "floats":[1] }
+}```
+
+```json
+{
+  "id": "minecraft:stone",
+  "components": { "minecraft:custom_model_data": { "strings":["anemys"] }
+}```
+
+###BUILDING
 ```java
 // new obj ToastManager
 ToastManager toastManager = new ToastManager(yourPlugin);
