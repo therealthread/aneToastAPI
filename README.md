@@ -11,27 +11,30 @@ Simple toast notification system for minecraft bukkit api
 {
   "id": "minecraft:stone",
   "tag": { "CustomModelData": 1 }
-}```
+}
+```
 
 ### **Between 1.20.5 - 1.21.1 (INTEGER - Components Format)**
 ```json
 {
   "id": "minecraft:stone",
   "components": { "minecraft:custom_model_data": 1 }
-}```
+}
+```
 
 ### **Between 1.21.2 - 1.21.5 (FLOATS & STRINGS - Components Format)**
 ```json
 {
   "id": "minecraft:stone",
   "components": { "minecraft:custom_model_data": { "floats":[1] }
-}```
-
+}
+```
 ```json
 {
   "id": "minecraft:stone",
   "components": { "minecraft:custom_model_data": { "strings":["anemys"] }
-}```
+}
+```
 
 ###BUILDING
 ```java
