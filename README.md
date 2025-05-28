@@ -4,7 +4,7 @@ Simple toast notification system for minecraft bukkit api
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
 ![](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png?raw=true)
 
-## 📌 Data Formats by Version,
+## 📌 Data Formats by Version
 
 ### **Between 1.16 - 1.20.4 (INTEGER - Tag Format)**
 ```json
@@ -36,7 +36,7 @@ Simple toast notification system for minecraft bukkit api
 }
 ```
 
-###BUILDING
+##BUILDING
 ```java
 // new obj ToastManager
 ToastManager toastManager = new ToastManager(yourPlugin);
@@ -100,3 +100,4 @@ toastManager.createToast()
             <version>24.1.0</version>
         </dependency>
 ```
+##
