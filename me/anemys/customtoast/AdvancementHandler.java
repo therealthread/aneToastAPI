@@ -1,7 +1,8 @@
-package me.anemys.anecustomtoast;
+package me.anemys.toastapi;
 
-import me.anemys.anecustomtoast.utils.ColorParser;
-import me.anemys.anecustomtoast.versions.ServerVersion;
+import me.anemys.toastapi.utils.ColorParser;
+import me.anemys.toastapi.versions.VersionType;
+
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -10,8 +11,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@SuppressWarnings({"unused", "SpellCheckingInspection", "deprecation"})
+import static me.anemys.toastapi.versions.ServerVersion.getVersionType;
 
+@SuppressWarnings({"unused", "SpellCheckingInspection", "deprecation"})
 class AdvancementHandler {
     private final JavaPlugin plugin;
 
@@ -69,8 +71,8 @@ class AdvancementHandler {
     }
 
     /**
-     * Creates an advancement for displaying a toast notification for Minecraft versions before 1.20.4
-     * Uses NBT with integer CustomModelData (1.20.4<legacy)
+     * Creates an advancement for displaying a toast notification for Minecraft versions before 1.20.5
+     * Uses NBT with integer CustomModelData (1.16-1.20.4)
      *
      * @param icon The Minecraft item ID to use as the toast icon
      * @param message The message to display in the toast
@@ -79,7 +81,7 @@ class AdvancementHandler {
      * @return The NamespacedKey of the created advancement
      */
     @NotNull
-    private NamespacedKey createAdvancementLegacy(String icon, String message, ToastType style, Object modelData, boolean glowing, NamespacedKey advancementKey) {
+    private NamespacedKey legacyType(String icon, String message, ToastType style, Object modelData, boolean glowing, NamespacedKey advancementKey) {
 
         int modelDataInt = 0;
         if (modelData instanceof Integer) {
@@ -122,38 +124,29 @@ class AdvancementHandler {
         return advancementKey;
     }
 
-
     /**
-     * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5+
-     * Uses component system with string or float CustomModelData
+     * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5-1.21.1
+     * Uses components system with integer CustomModelData
      *
      * @param icon The Minecraft item ID to use as the toast icon
      * @param message The message to display in the toast
      * @param style The advancement frame style (toast type)
-     * @param modelData The custom model data (string or float)
-     * @param modelDataType The type of model data ("string", "float", or "integer")
+     * @param modelData The custom model data as integer
      * @return The NamespacedKey of the created advancement
      */
     @NotNull
-    private NamespacedKey createAdvancementModern(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing, NamespacedKey advancementKey) {
-        String customModelData;
-
-        if (modelDataType == null) {
-            modelDataType = modelData instanceof String ? "string" :
-                    (modelData instanceof Float || modelData instanceof Double) ? "float" : "integer";
-        }
-
-        if ("float".equals(modelDataType) || "integer".equals(modelDataType)) {
-            customModelData = "\"minecraft:custom_model_data\": {\n" +
-                    "  \"floats\": [" + modelData +
-                    "]\n" +
-                    "}";
-        } else {
-            customModelData = "\"minecraft:custom_model_data\": {\n" +
-                    "  \"strings\": [\n" +
-                    "    \"" + modelData + "\"\n" +
-                    "  ]\n" +
-                    "}";
+    private NamespacedKey middleType(String icon, String message, ToastType style, Object modelData, boolean glowing, NamespacedKey advancementKey) {
+        int modelDataInt = 0;
+        if (modelData instanceof Integer) {
+            modelDataInt = (Integer) modelData;
+        } else if (modelData instanceof Float) {
+            modelDataInt = ((Float) modelData).intValue();
+        } else if (modelData instanceof String) {
+            try {
+                modelDataInt = Integer.parseInt(modelData.toString());
+            } catch (NumberFormatException ignored) {
+                //TODO: If parsing fails, modelDataInt remains 0
+            }
         }
 
         String json = "{\n" +
@@ -166,12 +159,12 @@ class AdvancementHandler {
                 "   \"icon\": {\n" +
                 "     \"id\": \"minecraft:" + icon + "\",\n" +
                 "     \"components\": {\n" +
-                customModelData +
-                (glowing ? ",\n \"minecraft:enchantments\": {\n" +
-                        " \"levels\": {\n" +
-                        " \"minecraft:protection\": 1\n" +
-                        " }\n" +
-                        " }" : "") +
+                "       \"minecraft:custom_model_data\": " + modelDataInt +
+                (glowing ? ",\n       \"minecraft:enchantments\": {\n" +
+                        "         \"levels\": {\n" +
+                        "           \"minecraft:protection\": 1\n" +
+                        "         }\n" +
+                        "       }" : "") +
                 "\n     },\n" +
                 "     \"count\": 1\n" +
                 "   },\n" +
@@ -191,6 +184,72 @@ class AdvancementHandler {
         return advancementKey;
     }
 
+    /**
+     * Creates an advancement for displaying a toast notification for Minecraft versions 1.21.2+
+     * Uses component system with string or float CustomModelData arrays
+     *
+     * @param icon The Minecraft item ID to use as the toast icon
+     * @param message The message to display in the toast
+     * @param style The advancement frame style (toast type)
+     * @param modelData The custom model data (string or float)
+     * @param modelDataType The type of model data ("string", "float", or "integer")
+     * @return The NamespacedKey of the created advancement
+     */
+    @NotNull
+    private NamespacedKey modernType(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing, NamespacedKey advancementKey) {
+        String customModelData;
+
+        if (modelDataType == null) {
+            modelDataType = modelData instanceof String ? "string" :
+                    (modelData instanceof Float || modelData instanceof Double) ? "float" : "integer";
+        }
+
+        if ("float".equals(modelDataType) || "integer".equals(modelDataType)) {
+            customModelData = "\"minecraft:custom_model_data\": {\n" +
+                    "        \"floats\": [" + modelData + "]\n" +
+                    "      }";
+        } else {
+            customModelData = "\"minecraft:custom_model_data\": {\n" +
+                    "        \"strings\": [\n" +
+                    "          \"" + modelData + "\"\n" +
+                    "        ]\n" +
+                    "      }";
+        }
+
+        String json = "{\n" +
+                " \"criteria\": {\n" +
+                "   \"trigger\": {\n" +
+                "     \"trigger\": \"minecraft:impossible\"\n" +
+                "   }\n" +
+                " },\n" +
+                " \"display\": {\n" +
+                "   \"icon\": {\n" +
+                "     \"id\": \"minecraft:" + icon + "\",\n" +
+                "     \"components\": {\n" +
+                "       " + customModelData +
+                (glowing ? ",\n       \"minecraft:enchantments\": {\n" +
+                        "         \"levels\": {\n" +
+                        "           \"minecraft:protection\": 1\n" +
+                        "         }\n" +
+                        "       }" : "") +
+                "\n     },\n" +
+                "     \"count\": 1\n" +
+                "   },\n" +
+                "   \"title\": " + message + ",\n" +
+                "   \"description\": {\n" +
+                "     \"text\": \"\"\n" +
+                "   },\n" +
+                "   \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
+                "   \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
+                "   \"announce_to_chat\": false,\n" +
+                "   \"show_toast\": true,\n" +
+                "   \"hidden\": true\n" +
+                " }\n" +
+                "}";
+
+        Bukkit.getUnsafe().loadAdvancement(advancementKey, json);
+        return advancementKey;
+    }
 
     /**
      * Helper method to determine which advancement creation method to use based on server version
@@ -204,7 +263,7 @@ class AdvancementHandler {
      */
     @NotNull
     private NamespacedKey createAdvancement(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing) {
-        boolean isNewVersion = ServerVersion.isNewVersion(plugin.getServer().getVersion());
+        String serverVersion = plugin.getServer().getVersion();
 
         List<Map<String, Object>> msgList = ColorParser.process(message);
         String json = ColorParser.formatToJsonString(msgList);
@@ -213,20 +272,32 @@ class AdvancementHandler {
 
         UUID randomUUID = UUID.randomUUID();
         NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
+        
+        VersionType versionType = getVersionType(serverVersion);
 
-        if (isNewVersion) {
+        switch (versionType) {
+            case LEGACY:
+                // 1.16 - 1.20.4: NBT format with integer CustomModelData
+                if (modelData == null) {
+                    modelData = 0;
+                }
+                return legacyType(icon, json, style, modelData, glowing, advancementKey);
 
-            if (modelData == null) {
-                modelData = "anemys";
-                modelDataType = "string";
-            }
-            return createAdvancementModern(icon, json, style, modelData, modelDataType, glowing, advancementKey);
-        } else {
+            case MIDDLE:
+                // 1.20.5 - 1.21.1: Components format with integer CustomModelData
+                if (modelData == null) {
+                    modelData = 0;
+                }
+                return middleType(icon, json, style, modelData, glowing, advancementKey);
 
-            if (modelData == null) {
-                modelData = 0;
-            }
-            return createAdvancementLegacy(icon, json, style, modelData, glowing, advancementKey);
+            case MODERN:
+            default:
+                // 1.21.2+: Components format with floats/strings arrays
+                if (modelData == null) {
+                    modelData = "anemys";
+                    modelDataType = "string";
+                }
+                return modernType(icon, json, style, modelData, modelDataType, glowing, advancementKey);
         }
     }
 
