@@ -1,4 +1,4 @@
-package me.anemys.toastapi;
+package me.anemys.anecustomtoast;
 
 import me.anemys.toastapi.utils.ColorParser;
 import me.anemys.toastapi.versions.VersionType;
