@@ -1,4 +1,4 @@
-package me.anemys.toastapi.versions;
+package me.anemys.anecustomtoast.versions;
 
 public class ServerVersion {
 
