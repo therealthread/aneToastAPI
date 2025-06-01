@@ -1,4 +1,4 @@
-package me.anemys.toastapi.versions;
+package me.anemys.anecustomtoast.versions;
 
 public enum VersionType {
     LEGACY,   // 1.16 - 1.20.4
