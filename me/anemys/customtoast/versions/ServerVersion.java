@@ -6,7 +6,7 @@ public class ServerVersion {
      * Version type based on server version
      */
     public static VersionType getVersionType(String serverVersion) {
-
+        // LEGACY: 1.16 - 1.20.4
         if (serverVersion.contains("1.16") ||
                 serverVersion.contains("1.17") ||
                 serverVersion.contains("1.18") ||
@@ -19,17 +19,21 @@ public class ServerVersion {
             return VersionType.LEGACY;
         }
 
+        // MIDDLE: 1.20.5 - 1.21.3
         if (serverVersion.contains("1.20.5") ||
                 serverVersion.contains("1.20.6") ||
-                (serverVersion.contains("1.21") && !serverVersion.contains("1.21.2") &&
-                        !serverVersion.contains("1.21.3") && !serverVersion.contains("1.21.4") &&
-                        !serverVersion.contains("1.21.5")) ||
-                serverVersion.contains("1.21.0") ||
-                serverVersion.contains("1.21.1")) {
+                (serverVersion.contains("1.21") &&
+                        !serverVersion.contains("1.21.4") &&
+                        !serverVersion.contains("1.21.5") &&
+                        !serverVersion.contains("1.21.6") &&
+                        !serverVersion.contains("1.21.7") &&
+                        !serverVersion.contains("1.21.8") &&
+                        !serverVersion.contains("1.21.9"))) { //i hope... i will have a long vacation :'(
+
             return VersionType.MIDDLE;
         }
 
-        // 1.21.2+ and future versions
+        // MODERN: 1.21.4 >>
         return VersionType.MODERN;
     }
 
