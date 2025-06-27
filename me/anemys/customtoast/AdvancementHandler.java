@@ -125,7 +125,7 @@ class AdvancementHandler {
     }
 
     /**
-     * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5-1.21.1
+     * Creates an advancement for displaying a toast notification for Minecraft versions 1.20.5-1.21.3
      * Uses components system with integer CustomModelData
      *
      * @param icon The Minecraft item ID to use as the toast icon
@@ -185,7 +185,7 @@ class AdvancementHandler {
     }
 
     /**
-     * Creates an advancement for displaying a toast notification for Minecraft versions 1.21.2+
+     * Creates an advancement for displaying a toast notification for Minecraft versions 1.21.4+
      * Uses component system with string or float CustomModelData arrays
      *
      * @param icon The Minecraft item ID to use as the toast icon
@@ -198,52 +198,48 @@ class AdvancementHandler {
     @NotNull
     private NamespacedKey modernType(String icon, String message, ToastType style, Object modelData, String modelDataType, boolean glowing, NamespacedKey advancementKey) {
         String customModelData;
-
         if (modelDataType == null) {
-            modelDataType = modelData instanceof String ? "string" :
-                    (modelData instanceof Float || modelData instanceof Double) ? "float" : "integer";
+            modelDataType = modelData instanceof String ? "string" : (modelData instanceof Float || modelData instanceof Double) ? "float" : "integer";
         }
 
         if ("float".equals(modelDataType) || "integer".equals(modelDataType)) {
             customModelData = "\"minecraft:custom_model_data\": {\n" +
-                    "        \"floats\": [" + modelData + "]\n" +
-                    "      }";
+                    " \"floats\": [" + modelData + "]\n" +
+                    " }";
         } else {
             customModelData = "\"minecraft:custom_model_data\": {\n" +
-                    "        \"strings\": [\n" +
-                    "          \"" + modelData + "\"\n" +
-                    "        ]\n" +
-                    "      }";
+                    " \"strings\": [\n" +
+                    " \"" + modelData + "\"\n" +
+                    " ]\n" +
+                    " }";
         }
 
         String json = "{\n" +
                 " \"criteria\": {\n" +
-                "   \"trigger\": {\n" +
-                "     \"trigger\": \"minecraft:impossible\"\n" +
-                "   }\n" +
+                " \"trigger\": {\n" +
+                " \"trigger\": \"minecraft:impossible\"\n" +
+                " }\n" +
                 " },\n" +
                 " \"display\": {\n" +
-                "   \"icon\": {\n" +
-                "     \"id\": \"minecraft:" + icon + "\",\n" +
-                "     \"components\": {\n" +
-                "       " + customModelData +
-                (glowing ? ",\n       \"minecraft:enchantments\": {\n" +
-                        "         \"levels\": {\n" +
-                        "           \"minecraft:protection\": 1\n" +
-                        "         }\n" +
-                        "       }" : "") +
-                "\n     },\n" +
-                "     \"count\": 1\n" +
-                "   },\n" +
-                "   \"title\": " + message + ",\n" +
-                "   \"description\": {\n" +
-                "     \"text\": \"\"\n" +
-                "   },\n" +
-                "   \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
-                "   \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
-                "   \"announce_to_chat\": false,\n" +
-                "   \"show_toast\": true,\n" +
-                "   \"hidden\": true\n" +
+                " \"icon\": {\n" +
+                " \"id\": \"minecraft:" + icon + "\",\n" +
+                " \"components\": {\n" +
+                " " + customModelData +
+                (glowing ? ",\n \"minecraft:enchantments\": {\n" +
+                        " \"minecraft:protection\": 1\n" +
+                        " }" : "") + "\n" +
+                " },\n" +
+                " \"count\": 1\n" +
+                " },\n" +
+                " \"title\": " + message + ",\n" +
+                " \"description\": {\n" +
+                " \"text\": \"\"\n" +
+                " },\n" +
+                " \"background\": \"minecraft:textures/gui/advancements/backgrounds/adventure.png\",\n" +
+                " \"frame\": \"" + style.toString().toLowerCase() + "\",\n" +
+                " \"announce_to_chat\": false,\n" +
+                " \"show_toast\": true,\n" +
+                " \"hidden\": true\n" +
                 " }\n" +
                 "}";
 
@@ -272,7 +268,7 @@ class AdvancementHandler {
 
         UUID randomUUID = UUID.randomUUID();
         NamespacedKey advancementKey = new NamespacedKey(plugin, "anelib_" + randomUUID);
-        
+
         VersionType versionType = getVersionType(serverVersion);
 
         switch (versionType) {
@@ -284,7 +280,7 @@ class AdvancementHandler {
                 return legacyType(icon, json, style, modelData, glowing, advancementKey);
 
             case MIDDLE:
-                // 1.20.5 - 1.21.1: Components format with integer CustomModelData
+                // 1.20.5 - 1.21.3: Components format with integer CustomModelData
                 if (modelData == null) {
                     modelData = 0;
                 }
@@ -292,7 +288,7 @@ class AdvancementHandler {
 
             case MODERN:
             default:
-                // 1.21.2+: Components format with floats/strings arrays
+                // 1.21.4+: Components format with floats/strings arrays
                 if (modelData == null) {
                     modelData = "anemys";
                     modelDataType = "string";
