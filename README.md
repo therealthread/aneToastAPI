@@ -1,5 +1,5 @@
 # 1.16 - 1.21.5 Component (Custom models) - [aneCT]
-Simple toast notification system for minecraft bukkit api
+Simple toast notification system for minecraft bukkit
 
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
 ![](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png?raw=true)
