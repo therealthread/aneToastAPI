@@ -35,18 +35,16 @@ public abstract class AbstractVersion
         for (Player p : targets)
         {
             if (!p.isOnline()) continue;
-            if (p.hasPermission("anecustomtoast.show"))
-            {
-                p.getAdvancementProgress(Bukkit.getAdvancement(key)).awardCriteria("trigger");
 
-                Bukkit.getScheduler().runTaskLater(AneToastAPI.getInstance(), () ->
+            p.getAdvancementProgress(Bukkit.getAdvancement(key)).awardCriteria("trigger");
+
+            Bukkit.getScheduler().runTaskLater(AneToastAPI.getInstance(), () ->
+            {
+                if (p.isOnline())
                 {
-                    if (p.isOnline())
-                    {
-                        p.getAdvancementProgress(Bukkit.getAdvancement(key)).revokeCriteria("trigger");
-                    }
-                }, 20L);
-            }
+                    p.getAdvancementProgress(Bukkit.getAdvancement(key)).revokeCriteria("trigger");
+                }
+            }, 20L);
 
         }
 
