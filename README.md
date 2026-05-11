@@ -4,7 +4,7 @@ Simple toast notification system for minecraft bukkit
 ![](https://github.com/therealthread/aneToastAPI/blob/main/image.png?raw=true)
 ![](https://github.com/therealthread/aneToastAPI/blob/main/rgb.png?raw=true)
 
-### Between 1.21.2 - 1.21.11 | 26.1x *(FLOATS & STRINGS - Components Format)*
+### Between 1.21.4 - 1.21.11 | 26.1x *(FLOATS & STRINGS - Components Format)*
 ```json
 {
   "id": "minecraft:stone",
